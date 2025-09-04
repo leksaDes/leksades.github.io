@@ -94,11 +94,11 @@ function loop() {
   }
 
   // Рисуем яблоко
-  context.fillStyle = 'purple';
+  context.fillStyle = 'violet';
   context.fillRect(apple.x, apple.y, grid-1, grid-1);
 
   // Рисуем змею
-  context.fillStyle = 'grey';
+  context.fillStyle = 'yellow';
   snake.cells.forEach(function(cell, index) {
     context.fillRect(cell.x, cell.y, grid-1, grid-1);
 
