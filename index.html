@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Snake HTML Game</title>
+  <meta charset="UTF-8">
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: LightGray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    border: 1px solid white;
+  }
+  </style>
+</head>
+<body>
+<canvas width="400" height="400" id="game"></canvas>
+<script>
+var canvas = document.getElementById('game');
+var context = canvas.getContext('2d');
+
+// Размер сетки
+var grid = 16;
+var count = 0;
+
+// Объект змеи
+var snake = {
+  x: 160,
+  y: 160,
+
+  // Скорость змеи (перемещение на одну клетку за кадр)
+  dx: grid,
+  dy: 0,
+
+  // Массив с координатами всех сегментов тела змеи
+  cells: [],
+
+  // Начальная длина змеи
+  maxCells: 4
+};
+
+// Объект яблока
+var apple = {
+  x: 320,
+  y: 320
+};
+
+// Функция получения случайного целого числа в заданном диапазоне
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+// Игровой цикл
+function loop() {
+  requestAnimationFrame(loop);
+
+  // Замедляем игру до 15 кадров в секунду
+  if (++count < 4) {
+    return;
+  }
+
+  count = 0;
+  context.clearRect(0,0,canvas.width,canvas.height);
+
+  // Двигаем змею в текущем направлении
+  snake.x += snake.dx;
+  snake.y += snake.dy;
+
+  // Оборачиваем змею при выходе за границы экрана
+  if (snake.x < 0) {
+    snake.x = canvas.width - grid;
+  } else if (snake.x >= canvas.width) {
+    snake.x = 0;
+  }
+  if (snake.y < 0) {
+    snake.y = canvas.height - grid;
+  } else if (snake.y >= canvas.height) {
+    snake.y = 0;
+  }
+
+  // Добавляем новую голову змеи
+  snake.cells.unshift({x: snake.x, y: snake.y});
+
+  // Удаляем последний элемент, если длина змеи больше максимальной
+  if (snake.cells.length > snake.maxCells) {
+    snake.cells.pop();
+  }
+
+  // Рисуем яблоко
+  context.fillStyle = 'red';
+  context.fillRect(apple.x, apple.y, grid-1, grid-1);
+
+  // Рисуем змею
+  context.fillStyle = 'grey';
+  snake.cells.forEach(function(cell, index) {
+    context.fillRect(cell.x, cell.y, grid-1, grid-1);
+
+    // Если змея съела яблоко
+    if (cell.x === apple.x && cell.y === apple.y) {
+      snake.maxCells++;
+      apple.x = getRandomInt(0, 25) * grid;
+      apple.y = getRandomInt(0, 25) * grid;
+    }
+
+    // Проверка столкновения с собственным телом
+    for (var i = index + 1; i < snake.cells.length; i++) {
+      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        // Сброс игры
+        snake.x = 160;
+        snake.y = 160;
+        snake.cells = [];
+        snake.maxCells = 4;
+        snake.dx = grid;
+        snake.dy = 0;
+        apple.x = getRandomInt(0, 25) * grid;
+        apple.y = getRandomInt(0, 25) * grid;
+      }
+    }
+  });
+}
+
+// Обработчик событий нажатий клавиш
+document.addEventListener('keydown', function(e) {
+  // Запрещаем движение в противоположном направлении
+  if (e.which === 37 && snake.dx === 0) {
+    snake.dx = -grid;
+    snake.dy = 0;
+  } else if (e.which === 38 && snake.dy === 0) {
+    snake.dy = -grid;
+    snake.dx = 0;
+  } else if (e.which === 39 && snake.dx === 0) {
+    snake.dx = grid;
+    snake.dy = 0;
+  } else if (e.which === 40 && snake.dy === 0) {
+    snake.dy = grid;
+    snake.dx = 0;
+  }
+});
+
+// Запуск игры
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
