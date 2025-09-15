@@ -94,21 +94,34 @@ function loop() {
   }
 
   // Рисуем яблоко
-  context.fillStyle = 'acid yellow';
+  context.fillStyle = 'violet';
   context.fillRect(apple.x, apple.y, grid-1, grid-1);
 
+  
   // Рисуем змею
-  context.fillStyle = 'plum';
+  context.fillStyle = 'yellow';
   snake.cells.forEach(function(cell, index) {
     context.fillRect(cell.x, cell.y, grid-1, grid-1);
-
+   draw(context) {
+    // Функция рисования змейки. Сюда передается наш 2д контекст
+    // из класса Canvas
+    
+        this.tails.forEach((el, index) => {
+        // Метод .forEach() перебирает все элементы массива
+            if (index == 0) {
+            // Если индекс элемента массива равен 0,
+                context.fillStyle = this.config.colorLight
+                // то красим в яркий цвет. Это голова
+            } else {
+                context.fillStyle = this.config.colorDark
+                // Иначе красим в темный цвет, это тело змейки
+            }
     // Если змея съела яблоко
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
       apple.x = getRandomInt(0, 25) * grid;
       apple.y = getRandomInt(0, 25) * grid;
     }
-
     // Проверка столкновения с собственным телом
     for (var i = index + 1; i < snake.cells.length; i++) {
       if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
