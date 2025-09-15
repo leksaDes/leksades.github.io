@@ -1,0 +1,163 @@
+name: Проверка HTML и загрузка в GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  check-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for index.html file
+        id: check-index
+        run: |
+          if [ ! -f index.html ]; then
+            echo "index.html file not found! Deployment aborted." >> validation_report_index.txt
+            echo "::error::index.html file not found!"
+            exit 1
+          else
+            echo "index.html file found. All good." >> validation_report_index.txt
+          fi
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report-index
+          path: validation_report_index.txt
+
+  check-htmlhint:
+    needs: check-index
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install HTMLHint
+        run: npm install -g htmlhint
+
+      - name: Check HTML code (HTMLHint)
+        id: check-htmlhint
+        run: |
+          htmlhint . > validation_report_htmlhint.txt
+          if [ $? -ne 0 ]; then
+            echo "::error::HTMLHint found issues!"
+            exit 1
+          fi
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report-htmlhint
+          path: validation_report_htmlhint.txt
+
+  check-w3c:
+    needs: check-htmlhint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install W3C Validator
+        run: npm install -g html-validator-cli
+
+      - name: Check W3C compliance
+        id: check-w3c
+        run: |
+          for file in $(find . -name "*.html"); do
+            echo "Checking $file" >> validation_report_w3c.txt
+            html-validator --file="$file" --verbose >> validation_report_w3c.txt
+            if [ $? -ne 0 ]; then
+              echo "::error::W3C Validator found issues in $file!"
+              exit 1
+            fi
+          done
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report-w3c
+          path: validation_report_w3c.txt
+
+  deploy:
+    needs: check-w3c
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  generate-report:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download validation reports
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-report-htmlhint
+          path: .
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: validation-report-w3c
+          path: .
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: validation-report-index
+          path: .
+
+      - name: Generate final report
+        run: |
+          echo "==== Final CI/CD Report ====" > final_report.txt
+          echo "" >> final_report.txt
+          echo "### Index.html Check Report" >> final_report.txt
+          cat validation_report_index.txt >> final_report.txt
+          echo "" >> final_report.txt
+          echo "### HTMLHint Report" >> final_report.txt
+          cat validation_report_htmlhint.txt >> final_report.txt
+          echo "" >> final_report.txt
+          echo "### W3C Validation Report" >> final_report.txt
+          cat validation_report_w3c.txt >> final_report.txt
+
+      - name: Save final report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-report
+          path: final_report.txt
