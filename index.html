@@ -27,13 +27,13 @@ var canvas = document.getElementById('game');
 var context = canvas.getContext('2d');
 
 // Размер сетки
-var grid = 20;
+var grid = 16;
 var count = 0;
 
 // Объект змеи
 var snake = {
-  x: 200,
-  y: 200,
+  x: 160,
+  y: 160,
 
   // Скорость змеи (перемещение на одну клетку за кадр)
   dx: grid,
@@ -43,14 +43,13 @@ var snake = {
   cells: [],
 
   // Начальная длина змеи
-  maxCells: 3
+  maxCells: 4
 };
 
 // Объект яблока
 var apple = {
-
-  x: 310,
-  y: 310
+  x: 320,
+  y: 320
 };
 
 // Функция получения случайного целого числа в заданном диапазоне
@@ -95,31 +94,14 @@ function loop() {
   }
 
   // Рисуем яблоко
-  context.fillStyle = 'plum';
+  context.fillStyle = 'acid yellow';
   context.fillRect(apple.x, apple.y, grid-1, grid-1);
 
   // Рисуем змею
-   draw(context) {
-    // Функция рисования змейки. Сюда передается наш 2д контекст
-    // из класса Canvas
-    
-        this.tails.forEach((el, index) => {
-        // Метод .forEach() перебирает все элементы массива
-            if (index == 0) {
-            // Если индекс элемента массива равен 0,
-                context.fillStyle = this.config.colorLight
-                // то красим в яркий цвет. Это голова
-            } else {
-                context.fillStyle = this.config.colorDark
-                // Иначе красим в темный цвет, это тело змейки
-            }
+  context.fillStyle = 'plum';
+  snake.cells.forEach(function(cell, index) {
+    context.fillRect(cell.x, cell.y, grid-1, grid-1);
 
-            context.fillRect( el.x, el.y, this.config.sizeCell,
-                                          this.config.sizeCell)
-            // Метод fillRect() рисует прямоугольник по двум
-            // координатам и двум величинам, это размер ячейки
-        }) 
-    }
     // Если змея съела яблоко
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
