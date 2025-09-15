@@ -43,13 +43,14 @@ var snake = {
   cells: [],
 
   // Начальная длина змеи
-  maxCells: 4
+  maxCells: 3
 };
 
 // Объект яблока
 var apple = {
-  x: 380,
-  y: 380
+
+  x: 310,
+  y: 310
 };
 
 // Функция получения случайного целого числа в заданном диапазоне
@@ -98,10 +99,123 @@ function loop() {
   context.fillRect(apple.x, apple.y, grid-1, grid-1);
 
   // Рисуем змею
-  context.fillStyle = 'yellow';
-  snake.cells.forEach(function(cell, index) {
-    context.fillRect(cell.x, cell.y, grid-1, grid-1);
+   draw(context) {
+    // Функция рисования змейки. Сюда передается наш 2д контекст
+    // из класса Canvas
+    
+        this.tails.forEach((el, index) => {
+        // Метод .forEach() перебирает все элементы массива
+            if (index == 0) {
+            // Если индекс элемента массива равен 0,
+                context.fillStyle = this.config.colorLight
+                // то красим в яркий цвет. Это голова
+            } else {
+                context.fillStyle = this.config.colorDark
+                // Иначе красим в темный цвет, это тело змейки
+            }
 
+            context.fillRect( el.x, el.y, this.config.sizeCell,
+                                          this.config.sizeCell)
+            // Метод fillRect() рисует прямоугольник по двум
+            // координатам и двум величинам, это размер ячейки
+        }) 
+    }
+ death() {
+    // Метод death() возвращает все параметры
+    // на начальные, перезапускает игру 
+        this.x = 336
+        this.y = 480
+        // Ставит змейку на нужные координаты        
+        this.dx = 0
+        this.dy = -this.config.sizeCell
+        // Выставляет напрвление движения 
+        this.tails = []
+        // Обнуляем массив хвостов
+        this.maxTails = 1
+        // Делает параметр колическва хвостов равным 1
+    }
+  control() {        
+        document.addEventListener("keydown", e => {
+        // Метод addEventListener() отслеживает события
+        // Первый аргумен указывает на тип события - кнопка нажата.
+        // Второй агрумент указывает на "слушателя", тот раздражитель
+        // который должен это событие вызвать и ту функцию которое
+        // это событие произведет. В нашем случае это будут кнопки
+        // клавиатуры
+        
+            if (e.code == 'ArrowUp') {
+            // Если код слушателя равен клавише "Стрелка вверх" то
+            
+                if (this.dx == 0 &&
+                    this.dy == this.config.sizeCell) {
+                    return
+                    // Если сейчас прибавление координат идет по
+                    // оси y, то ничего не делаем - return
+                    // Эта проверка запрещает змейке начать
+                    // двигаться в противоположную от текущей
+                } else {
+                    this.dx = 0
+                    this.dy = -this.config.sizeCell
+                    // Иначе начинаем отнимать координаты
+                    // от текущего положения головы змейки
+                    // по оси y. Это заставит змейку двигаться
+                    // вверх от текущих координат y
+                }
+                
+            } else if (e.code == 'ArrowLeft') {
+                if (this.dx == this.config.sizeCell &&
+                    this.dy == 0) {
+                    return
+                } else {
+                    this.dx = -this.config.sizeCell
+                    this.dy = 0
+                    // Для движения влево все тоже самое,
+                    // но начинаем отнимать размер ячейки от
+                    // оси x, не трогая значение y
+                }
+            
+            } else if (e.code == 'ArrowDown') {
+                if (this.dx == 0 &&
+                    this.dy == -this.config.sizeCell) {
+                    return
+                 } else {
+                    this.dx = 0
+                    this.dy = this.config.sizeCell
+                }
+            
+            } else if (e.code == 'ArrowRight') {
+                if (this.dx == -this.config.sizeCell &&
+                    this.dy == 0) { 
+                    return
+                } else {
+                    this.dx = this.config.sizeCell
+                    this.dy = 0
+                }
+            
+            }
+            
+            if (e.code == 'KeyG') {
+            // Если код слушателя равен клавише "G", то
+                if (this.config.godMode) {
+                // Если параметр godMode равен true (включен)
+                    this.config.godMode = false
+                    // То выключаем его, делая false
+                    this.config.drawGodMode()
+                    // Запускаем функцию смены цветов и надписей
+                    // Интерфейс и змейка становятся оранжевыми
+                    
+                } else {
+                // Если параметр godMode равен false
+                    this.config.godMode = true
+                    // Включаем его, делая true
+                    this.config.drawGodMode()
+                    // Запускаем функцию смены цветов и надписей
+                    // Интерфейс и змейка становятся красными
+                }
+            }        
+        })    
+    }
+}
     // Если змея съела яблоко
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
