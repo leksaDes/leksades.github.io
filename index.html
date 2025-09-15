@@ -27,13 +27,13 @@ var canvas = document.getElementById('game');
 var context = canvas.getContext('2d');
 
 // Размер сетки
-var grid = 16;
+var grid = 20;
 var count = 0;
 
 // Объект змеи
 var snake = {
-  x: 160,
-  y: 160,
+  x: 200,
+  y: 200,
 
   // Скорость змеи (перемещение на одну клетку за кадр)
   dx: grid,
@@ -48,8 +48,8 @@ var snake = {
 
 // Объект яблока
 var apple = {
-  x: 320,
-  y: 320
+  x: 400,
+  y: 400
 };
 
 // Функция получения случайного целого числа в заданном диапазоне
@@ -94,7 +94,7 @@ function loop() {
   }
 
   // Рисуем яблоко
-  context.fillStyle = 'violet';
+  context.fillStyle = 'violeq';
   context.fillRect(apple.x, apple.y, grid-1, grid-1);
 
   // Рисуем змею
