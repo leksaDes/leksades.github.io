@@ -27,7 +27,7 @@ var canvas = document.getElementById('game');
 var context = canvas.getContext('2d');
 
 // Размер сетки
-var grid = 16;
+var grid = 20;
 var count = 0;
 
 // Объект змеи
@@ -94,11 +94,11 @@ function loop() {
   }
 
   // Рисуем яблоко
-  context.fillStyle = 'plum';
+  context.fillStyle = 'yellow';
   context.fillRect(apple.x, apple.y, grid-1, grid-1);
 
   // Рисуем змею
-  context.fillStyle = 'yellow';
+  context.fillStyle = 'plum';
   snake.cells.forEach(function(cell, index) {
     context.fillRect(cell.x, cell.y, grid-1, grid-1);
 
